@@ -1,0 +1,45 @@
+name: Test
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+env:
+  CONSOLE_OUTPUT: XTerm
+
+jobs:
+  test:
+    name: ${{matrix.ruby}} on ${{matrix.os}}
+    runs-on: ${{matrix.os}}-latest
+    continue-on-error: ${{matrix.experimental}}
+    
+    strategy:
+      matrix:
+        os:
+          - ubuntu
+          - macos
+        
+        ruby:
+          - "2.7"
+          - "3.0"
+          - "3.2"
+          - "3.3"
+        
+        experimental: [false]
+        
+        include:
+          - os: ubuntu
+            ruby: head
+            experimental: true
+    
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{matrix.ruby}}
+        bundler-cache: true
+    
+    - name: run-tests
+      timeout-minutes: 3
+      run: bundle exec rspec
